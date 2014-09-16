@@ -2,7 +2,7 @@
   PRE: true
   POST:
       y > r;
-      x == r + ( y * q )
+      x == r + y * q
 */
 
 r = x;

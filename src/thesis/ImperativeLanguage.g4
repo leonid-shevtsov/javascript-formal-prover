@@ -2,62 +2,55 @@ grammar ImperativeLanguage;
 
 @header { package thesis; }
 
-provingStructure: assertionComment WS? commands EOF;
+provingStructure: assertionComment commands EOF;
 
-assertionComment: '/*' WS? preconditions WS? postconditions WS? '*/';
+assertionComment: '/*' preconditions postconditions '*/';
 
-preconditions: 'PRE:' WS? predicates;
+preconditions: 'PRE:' predicates;
 
-postconditions: 'POST:' WS? predicates;
+postconditions: 'POST:' predicates;
 
-predicates: predicate ( WS? SEMICOLON WS? predicate)* SEMICOLON?;
+predicates: predicate ( SEMICOLON predicate)* SEMICOLON?;
 
-commands: command ( WS? SEMICOLON WS? command)* SEMICOLON?;
+commands: command ( SEMICOLON command)* SEMICOLON?;
 
 command:
-  assignmentCommand |
-  sequenceCommand |
-  conditionalCommand |
-  loopCommand;
-
-assignmentCommand: identifier WS? '=' WS? expression;
-
-sequenceCommand: '{' WS? commands  WS? '}';
-
-conditionalCommand: 'if' WS? '(' WS? predicate WS? ')' WS? command;
-
-loopCommand: 'while' WS? '(' WS? predicate WS? ')' WS? command;
+  identifier '=' expression # assignmentCommand
+  | '{' commands  '}' # sequenceCommand
+  | 'if' '(' predicate ')' command # conditionalCommand
+  | 'while' '(' predicate ')' command # loopCommand
+  ;
 
 // Expression grammar
 
-expression: multExpression;
+expression:
+  expression MULT_OPERATOR expression # multExpression
+  | expression SUM_OPERATOR expression # sumExpression
+  | atom # atomExpression
+  ;
 
-multExpression: sumExpression (WS? multOperator WS? multExpression)*;
+negAtom: NEG_OPERATOR atom;
 
-sumExpression: negExpression (WS? sumOperator WS? sumExpression)*;
+atom: notAtom | numericConstant | identifier | parensExpression;
 
-negExpression: '-' WS? atom | atom;
-
-atom: numericConstant | identifier | parensExpression;
-
-parensExpression: '(' WS? expression WS? ')';
+parensExpression: '(' expression ')';
 
 // Predicate grammar
 
-predicate: andPredicate;
+predicate:
+  predicate AND_OPERATOR predicate # andPredicate
+  | predicate OR_OPERATOR predicate # orPredicate
+  | predicateAtom # atomPredicate
+  ;
 
-andPredicate: orPredicate (WS? '&&' WS? andPredicate)*;
+notAtom: NOT_OPERATOR predicateAtom;
 
-orPredicate: notPredicate (WS? '||' WS? orPredicate)*;
-
-notPredicate: '!' WS? predicateAtom | predicateAtom;
-
-predicateAtom: booleanConstant | comparison | parensPredicate;
+predicateAtom: notAtom | booleanConstant | comparison | parensPredicate;
 
 comparison:
-  expression WS? comparisonOperator WS? expression;
+  expression COMPARISON_OPERATOR expression;
 
-parensPredicate: '(' WS? predicate WS? ')';
+parensPredicate: '(' predicate ')';
 
 // Primitives
 
@@ -67,11 +60,21 @@ numericConstant: NUMBER;
 
 identifier: ID;
 
-comparisonOperator: '<' | '>' | '==' | '>=' | '<=' | '!=';
+COMPARISON_OPERATOR: '<' | '>' | '==' | '>=' | '<=' | '!=';
 
-multOperator: '*' | '/';
+MULT_OPERATOR: MULTIPLY | DIVIDE;
+MULTIPLY: '*';
+DIVIDE: '/';
 
-sumOperator: '+' | '-';
+SUM_OPERATOR: PLUS | MINUS;
+PLUS: '+';
+MINUS: '-';
+
+NEG_OPERATOR: MINUS;
+
+AND_OPERATOR: '&&';
+OR_OPERATOR: '||';
+NOT_OPERATOR: '!';
 
 NUMBER: [0-9]+;
 
