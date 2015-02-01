@@ -14,11 +14,16 @@ predicates: predicate ( SEMICOLON predicate)* SEMICOLON?;
 
 commands: command ( SEMICOLON command)* SEMICOLON?;
 
+loopComment: '/*' invariant '*/';
+
+invariant: 'INV:' predicate;
+
 command:
   identifier '=' expression # assignmentCommand
   | '{' commands  '}' # sequenceCommand
   | 'if' '(' predicate ')' command # conditionalCommand
-  | 'while' '(' predicate ')' command # loopCommand
+  | 'if' '(' predicate ')' command 'else' command # fullConditionalCommand
+  | loopComment 'while' '(' predicate ')' command # loopCommand
   ;
 
 // Expression grammar

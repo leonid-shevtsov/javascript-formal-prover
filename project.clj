@@ -6,6 +6,7 @@
   :dependencies [
                  [org.clojure/clojure "1.6.0"]
                  [org.antlr/antlr4 "4.3"]
+                 [org.clojure/core.logic "0.8.8"]
                  ]
   :main ^:skip-aot thesis.core
   :target-path "target/%s"
