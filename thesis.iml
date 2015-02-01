@@ -16,7 +16,6 @@
     <orderEntry type="library" name="Leiningen: clojure-complete:0.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.antlr/antlr4:4.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.6.0" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/core.logic:0.8.8" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.3" level="project" />
     <orderEntry type="library" name="Leiningen: org.antlr/ST4:4.0.8" level="project" />
     <orderEntry type="library" name="Leiningen: org.antlr/antlr-runtime:3.5.2" level="project" />
