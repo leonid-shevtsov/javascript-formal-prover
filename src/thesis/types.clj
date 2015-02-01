@@ -22,6 +22,8 @@
 
 (defn pred-atom? [predicate] (not (pred? predicate)))
 
+(defn expr-atom? [expression] (not (expr? expression)))
+
 (defn expr-commutative? [expression]
   (#{:and :or :+ :* :==} (:operator expression)))
 
