@@ -1,5 +1,7 @@
-(ns thesis.semantic-analyzer
-  (:use thesis.types))
+(ns thesis.program-semantics
+  (:use thesis.algebra))
+
+(defrecord Command [type params])
 
 (defn- find-child
   "Find a child seq with a given name inside the context seq

@@ -1,6 +1,7 @@
 (ns thesis.wp
-  (use thesis.semantic-analyzer thesis.types)
-  (:import (thesis.types Command Expression)))
+  (use thesis.program-semantics thesis.algebra)
+  (:import (thesis.algebra Expression)
+           (thesis.program_semantics Command)))
 
 (declare command-wp)
 
@@ -8,7 +9,7 @@
   [identifier value construct]
   (cond
     (expr? construct)
-      (map-expr
+      (expr-map
         (partial replace-identifier-in-expression identifier value) construct)
 
     (identifier? construct)

@@ -1,9 +1,9 @@
 (ns thesis.prover
-  (:use thesis.types thesis.normalize)
+  (:use thesis.algebra thesis.cnf thesis.normalize-inequalities)
   (:require [thesis.wp :as wp]
             [clojure.set :as set]
             [clojure.string :as s])
-  (:import (thesis.types Expression)))
+  (:import (thesis.algebra Expression)))
 
 ; (map #(map str %) (-> "division.js" slurp parse parse-tree->program prove))
 
