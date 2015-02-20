@@ -117,3 +117,19 @@
                             "x"
                             (algebra/expr :not [:not [:not [:not "x"]]]))
     => "x"))
+
+(fact
+  "expr-clauses groups expression by an operator"
+  (algebra/expr-clauses :* (algebra/expr :* [:+ 1 2] [:* [:+ 3 4] [:+ 5 6]]))
+  => [(algebra/expr :+ 1 2) (algebra/expr :+ 3 4) (algebra/expr :+ 5 6)])
+
+(fact
+  "expr-clauses with just one expression will return its params"
+  (algebra/expr-clauses :* (algebra/expr :* 1 2))
+  => [1 2]
+  )
+
+(fact
+  "top-level expression for expr-clauses must match clause-operator, or the result will have only one clause"
+  (algebra/expr-clauses :* (algebra/expr :+ [:+ 1 2] [:* [:+ 3 4] [:+ 5 6]]))
+  => [ (algebra/expr :+ [:+ 1 2] [:* [:+ 3 4] [:+ 5 6]]) ])

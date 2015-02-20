@@ -1,75 +1,43 @@
 (ns thesis.prover
-  (:use thesis.algebra thesis.cnf thesis.normalize-inequalities)
-  (:require [thesis.wp :as wp]
-            [clojure.set :as set]
-            [clojure.string :as s])
-  (:import (thesis.algebra Expression)))
+  (:require [clojure.tools.logging :as log]
+            [clojure.string :as s]
+            [thesis.algebra :refer [expr]]
+            [thesis.clausal-normal-form :refer [clausal-normal-form clause-set]]
+            [clojure.set :as set]))
 
-; (map #(map str %) (-> "division.js" slurp parse parse-tree->program prove))
+(defn derive-resolutions [clauses]
+  (clause-set (for [c1 clauses c2 clauses :when (not= c1 c2)]
+    (let [[yes1 no1] c1
+          [yes2 no2] c2
+          all-yes (set/union yes1 yes2)
+          all-no (set/union no1 no2)]
+        [(set/difference all-yes all-no) (set/difference all-no all-yes)]))))
 
-(defn conjuncts
-  "Returns a two-dimensional array - top level is AND and second level is OR, and elements are expressions"
-  [conjunctive-normal-form]
-  (map (partial group-expression-by :or) (group-expression-by :and conjunctive-normal-form)))
+(defn clause->str [[yes-disjuncts no-disjuncts]]
+  (s/join " OR " (concat yes-disjuncts (map (partial str "NOT ") no-disjuncts))))
 
-(defn contradicts? [^Expression ineq1 ^Expression ineq2]
-  (let [[lside1 rside1] (:params ineq1)
-        [lside2 rside2] (:params ineq2)
-        op1 (:operator ineq1)
-        op2 (:operator ineq2)]
-    (and (= lside1 lside2)
-         (case [op1 op2]
-           [:== :==] (not= rside1 rside2)
-           [:== :>] (<= rside1 rside2)                      ; x==1 x>2 ; x==1 x>1
-           [:== :<] (>= rside1 rside2)                      ; x==2 x<1; x==1 x<1
-           [:> :==] (>= rside1 rside2)                      ; x>2 x==1; x>1 x==1
-           [:> :>] false
-           [:> :<] (>= rside1 rside2)                       ; x>2 x<1; x>1 x<1
-           [:< :==] (<= rside1 rside2)                      ; x<1 x==2; x<1 x==1
-           [:< :>] (<= rside1 rside2)                       ; x<1 x>2; x<1 x>1
-           [:< :<] false))))
+(defn clauses->str [cnf]
+  (s/join "\nAND\n" (map clause->str cnf)))
 
-(defn derive-conjunct [conjunct1 conjunct2]
-  (into #{} (concat
-    (filter (fn [ineq] (not-any? (partial contradicts? ineq) conjunct2)) conjunct1)
-    (filter (fn [ineq] (not-any? (partial contradicts? ineq) conjunct1)) conjunct2)
-    )))
+(defn empty-clause? [[yes no]]
+  (and (empty? yes) (empty? no)))
 
-(defn derive-all-conjuncts [conjuncts]
-  (set/difference
-    (->> (for [conjunct1 conjuncts conjunct2 conjuncts]
-           (and (not= conjunct1 conjunct2) (derive-conjunct conjunct1 conjunct2)))
-         (filter coll?)
-         (into #{}))
-    conjuncts))
-
-(defn resolution-method [conjuncts iteration]
+(defn resolution-method [clauses iteration]
   (if (> iteration 1000)
     :exceeded-iteration-limit
-    (if-let [best-new-conjunct (some->> conjuncts
-                                         (derive-all-conjuncts)
-                                         (not-empty)
-                                         (apply min-key count))]
-      (resolution-method (conj conjuncts best-new-conjunct) (inc iteration))
-      :disproved)))
-
-(defn unwrap-double-inequality [inequality]
-  (let [operator (:operator inequality) params (:params inequality)]
-    (case operator
-      :>= (list (apply expr :> params) (apply expr :== params))
-      :<= (list (apply expr :< params) (apply expr :== params))
-      :!= (list (apply expr :< params) (apply expr :> params))
-      (list inequality) ; default
+    (if-let [best-clause (first (set/difference (derive-resolutions clauses) clauses))]
+      (if (empty-clause? best-clause)
+        :disproved
+        (resolution-method (conj clauses best-clause) (inc iteration))
+        )
+      (do
+        (log/debug "Failed to disprove: " (clauses->str clauses))
+        :failed-to-disprove)
       )))
 
-(defn prove
-  [program]
-  (let [weakest-predicate (wp/weakest-predicate program)
-        counterexample (expr :and (:precondition program) (expr :not weakest-predicate))
-        conjuncts (-> counterexample
-                      simplified-conjunctive-normal-form
-                      conjuncts)
-        normalized-conjuncts (into #{} (map #(apply concat (map unwrap-double-inequality (map normal-inequality-form %))) conjuncts))
+(defn resolution-prover [hypothesis]
+  (let [counter-hypothesis (expr :not hypothesis)
+        cnf (clausal-normal-form counter-hypothesis)
+        _ (log/debug (clauses->str cnf))
         ]
-      (= (resolution-method normalized-conjuncts 0) :disproved)
-    ))
+    (resolution-method cnf 0)))

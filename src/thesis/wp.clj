@@ -1,7 +1,5 @@
 (ns thesis.wp
-  (use thesis.program-semantics thesis.algebra)
-  (:import (thesis.algebra Expression)
-           (thesis.program_semantics Command)))
+  (:require [thesis.algebra :refer [expr expr-map expr? identifier?]]))
 
 (declare command-wp)
 
@@ -17,23 +15,23 @@
           value
           construct)
 
-    true construct))
+    :else construct))
 
 
-(defn conditional-wp [^Expression predicate ^Command if-command ^Command else-command ^Expression postcondition]
+(defn conditional-wp [predicate if-command else-command postcondition]
   (expr :and
         (expr :implies predicate (command-wp postcondition if-command))
         (expr :implies (expr :not predicate) (command-wp postcondition else-command))))
 
 ; TODO need to check variant, too
-(defn loop-wp [^Expression predicate ^Command loop-command ^Expression invariant ^Expression postcondition]
+(defn loop-wp [ predicate loop-command invariant postcondition]
   (expr :and
         invariant
         (expr :and
               (expr :implies (expr :and predicate invariant) (command-wp postcondition loop-command))
-              (expr :implies (expr :and (expr :not predicate) invariant) postcondition))))
+              (expr :implies (expr :and [:not predicate] invariant) postcondition))))
 
-(defn command-wp [^Expression postcondition ^Command command]
+(defn command-wp [postcondition command]
   (let [c-type (:type command)
         c-params (:params command)]
     (case c-type
@@ -46,3 +44,9 @@
 
 (defn weakest-predicate [program]
   (command-wp (:postcondition program) (:commands program)))
+
+(defn program-correctness-hypothesis
+  "Returns hypothesis that the program is correct, that is:
+  precondition => weakest-predicate(commands, postcondition)"
+  [program]
+  (expr :implies (:precondition program) (weakest-predicate program)))

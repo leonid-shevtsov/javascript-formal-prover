@@ -10,6 +10,9 @@
   (toString [this]
     (str "(" (-> this :operator name s/upper-case) " " (s/join " " (map str (:params this))) ")")))
 
+(defmethod print-method Expression [expr ^java.io.Writer writer]
+  (.write writer (str expr)))
+
 (defn expr? [expression] (isa? (class expression) Expression))
 
 (defn expr
@@ -19,7 +22,7 @@
   (let [realized-params (map (fn[param] (if (and (not (expr? param)) (coll? param)) (apply expr param) param)) params)]
     (->Expression operator realized-params)))
 
-(defn expr-map [fn expression] (apply expr (:operator expression) (map fn (:params expression))))
+(defn expr-map [f expression] (apply expr (:operator expression) (map f (:params expression))))
 
 (defn expr-atom? [expression] (not (expr? expression)))
 
@@ -90,3 +93,10 @@
           (recur pattern-from pattern-to (expr-construct param-bindings pattern-to))
           expr-with-transformed-params)))
     expression))
+
+(defn expr-clauses
+  "Given expression subexpr-A <clause-operator> subexpr-B <clause-operator> ..., produces a seq of (subexpr-A subexpr-B ... )"
+  [clause-operator expression]
+  (if (or (expr-atom? expression) (not= clause-operator (:operator expression)))
+    [expression]
+    (apply concat (map (partial expr-clauses clause-operator) (:params expression)))))

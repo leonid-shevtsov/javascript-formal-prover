@@ -1,8 +1,9 @@
-(ns thesis.cnf
+(ns thesis.clausal-normal-form
   (:require
     [clojure.string :as s]
-    [thesis.algebra :refer [expr-transform expr-atom?]]
-    [thesis.simplify :refer [simplify-expression]]))
+    [thesis.algebra :refer [expr-transform expr-atom? expr-clauses expr?]]
+    [thesis.simplify :refer [simplify-expression]]
+    [clojure.set :as set]))
 
 (defn- de-implify
   [predicate]
@@ -40,7 +41,31 @@
 (defn- simplified-conjunctive-normal-form [predicate]
   (-> predicate simplify-expression conjunctive-normal-form simplify-expression))
 
-(defn group-expression-by [operator expression]
-  (if (or (expr-atom? expression) (not= operator (:operator expression)))
-    (list expression)
-    (apply concat (map (partial group-expression-by operator) (:params expression)))))
+(defn- yes-no-clauses [expressions]
+  (let [groups (group-by #(and (expr? %) (= :not (:operator %))) expressions)]
+    [ (set (get groups false)) (set (map #(first (:params %)) (get groups true)))]
+    )
+  )
+
+(defn- clauses
+  "Returns a two-dimensional array - top level is AND and second level is OR, and elements are expressions"
+  [conjunctive-normal-form]
+  (map #(yes-no-clauses (expr-clauses :or %)) (expr-clauses :and conjunctive-normal-form)))
+
+(defn remove-true-clauses [clauses]
+  (filter (fn [[yes no]] (empty? (set/intersection yes no))) clauses)
+  )
+
+(defn compare-clauses [c1 c2]
+  (let [[y1 n1] c1
+        [y2 n2] c2
+        c (compare (+ (count y1) (count n1)) (+ (count y2) (count n2)))]
+    (if (= c 0)
+      (compare (hash c1) (hash c2))
+      c)))
+
+(defn clause-set [clauses]
+  (apply sorted-set-by compare-clauses clauses))
+
+(defn clausal-normal-form [expression]
+  (-> expression simplified-conjunctive-normal-form clauses remove-true-clauses clause-set))
