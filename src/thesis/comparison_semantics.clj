@@ -28,8 +28,8 @@
    :<  [["<"]    "l<r"]
    :<= [[">"]    [:not "l>r"]]
    :>= [["<"]    [:not "l<r"]]
-   :== [[">" "<"] [:and [:not "l>r"] [:not "l<r"]]]
-   :!= [[">" "<"] [:or "l>r" "l<r"]]
+   :== [["=="]  "l==r"]
+   :!= [["=="] [:not "l==r"]]
    })
 
 (defn record-comparison [bindings comparison]
@@ -77,6 +77,15 @@
                        (and (> x y) (expr :implies [:not exprx] [:not expry]))]
               [:< :>] [(and (<= x y) (expr :implies exprx [:not expry]))
                        (and (> x y) (expr :implies [:not exprx] expry))]
+              [:> :==] [(and (>= x y) (expr :implies exprx [:not expry]))
+                        (and (< x y) (expr :implies [:not exprx] [:not expry]))]
+              [:< :==] [(and (<= x y) (expr :implies exprx [:not expry]))
+                        (and (> x y) (expr :implies [:not exprx] [:not expry]))]
+              [:== :==] [(and (not= x y) (expr :implies exprx [:not expr y]))]
+              [:== :>] [(and (> x y) (expr :implies exprx expry))
+                        (and (<= x y) (expr :implies exprx [:not expry]))]
+              [:== :<] [(and (< x y) (expr :implies exprx expry))
+                        (and (>= x y) (expr :implies exprx [:not expry]))]
               ))))
 
 (defn binding-implications

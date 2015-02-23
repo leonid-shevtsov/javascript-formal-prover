@@ -17,7 +17,7 @@
                                          (program-correctness-hypothesis program))
         [comparison-facts pure-correctness-hypothesis] (factualize-comparisons correctness-hypothesis)
         _ (log/spyf "Pure hypothesis: %s" (simplify-expression pure-correctness-hypothesis))
-        _ (log/spyf "Comparison facts: %s" (s/join "\n" (map str comparison-facts)))
+        _ (log/spyf "Comparison facts:\n%s" (s/join "\n" (map str comparison-facts)))
         prover-conclusion (resolution-prover comparison-facts pure-correctness-hypothesis)]
     prover-conclusion))
 
