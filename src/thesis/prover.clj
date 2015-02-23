@@ -3,7 +3,10 @@
             [clojure.string :as s]
             [thesis.algebra :refer [expr]]
             [thesis.clausal-normal-form :refer [clausal-normal-form clause-set]]
+            [thesis.simplify :refer [simplify-expression]]
             [clojure.set :as set]))
+
+; https://en.wikipedia.org/wiki/Resolution_(logic)
 
 (defn derive-resolutions [clauses]
   (clause-set (for [c1 clauses c2 clauses :when (not= c1 c2)]
@@ -25,19 +28,21 @@
 (defn resolution-method [clauses iteration]
   (if (> iteration 1000)
     :exceeded-iteration-limit
-    (if-let [best-clause (first (set/difference (derive-resolutions clauses) clauses))]
+    (if-let [best-clause (log/spyf "Best derived clause: %s" (first (set/difference (derive-resolutions clauses) clauses)))]
       (if (empty-clause? best-clause)
-        :disproved
+        :proved
         (resolution-method (conj clauses best-clause) (inc iteration))
         )
       (do
         (log/debug "Failed to disprove: " (clauses->str clauses))
-        :failed-to-disprove)
+        :failed-to-prove)
       )))
 
-(defn resolution-prover [hypothesis]
+(defn resolution-prover [facts hypothesis]
   (let [counter-hypothesis (expr :not hypothesis)
-        cnf (clausal-normal-form counter-hypothesis)
-        _ (log/debug (clauses->str cnf))
+        _ (log/spyf "Simplified counter hypothesis: %s" (simplify-expression counter-hypothesis))
+        provable-statement (reduce #(expr :and %1 %2) counter-hypothesis facts)
+        cnf (clausal-normal-form provable-statement)
+        _ (log/spyf "Initial clauses: %s" (clauses->str cnf))
         ]
     (resolution-method cnf 0)))

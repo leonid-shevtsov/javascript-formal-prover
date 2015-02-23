@@ -55,32 +55,37 @@
 
 ;; Implementation of augment-hypothesis-with-comparison-implications
 
-(defn comparison-implies [lside [[ox x] [oy y]]]
+(defn comparison-implications
+  "Input:
+   2 comparisons: lside ox x, and lside oy y, where ox,oy - one of [>, <],
+   x, y - scalars
+   Output:
+   if there is an implication from lside ox x being true or false,
+   to lside oy y being true or false, then
+   returns list of such implications, otherwise empty list
+   "
+  [lside [[ox x] [oy y]]]
   (let [exprx (str lside (name ox) x)
         expry (str lside (name oy) y)]
-    (case [ox oy]
-      [:> :<] (and (>= x y) (expr :implies exprx [:not expry]))
-      [:> :>] (and (> x y) (expr :implies exprx expry))
-      [:< :<] (and (< x y) (expr :implies exprx expry))
-      [:< :>] (and (<= x y) (expr :implies exprx [:not expry]))
-      )))
+    (remove false?
+            (case [ox oy]
+              [:> :<] [(and (>= x y) (expr :implies exprx [:not expry]))
+                       (and (< x y) (expr :implies [:not exprx] expry))]
+              [:> :>] [(and (> x y) (expr :implies exprx expry))
+                       (and (< x y) (expr :implies [:not exprx] [:not expry]))]
+              [:< :<] [(and (< x y) (expr :implies exprx expry))
+                       (and (> x y) (expr :implies [:not exprx] [:not expry]))]
+              [:< :>] [(and (<= x y) (expr :implies exprx [:not expry]))
+                       (and (> x y) (expr :implies [:not exprx] expry))]
+              ))))
 
-(defn augment-one [hypothesis [clauses comparisons]]
+(defn binding-implications
+  "Given one binding produced by extract-comparisons, build a collection of
+  axioms about the comparisons mentioned in the binding"
+  [[clauses comparisons]]
   (let [string-clause (cpf->str clauses)
         permutations (for [c1 comparisons c2 comparisons :when (not= c1 c2)] [c1 c2])]
-    (reduce (fn [hypothesis permutation]
-              (if-let [implication (comparison-implies string-clause permutation)]
-                (expr :and hypothesis implication)
-                hypothesis))
-            hypothesis
-            permutations)))
-
-(defn augment-hypothesis-with-comparison-implications
-  "Given a hypothesis and comparison bindings from factualize-comparisons,
-  builds implications between mentioned comparisons, and augments hypothesis with
-  these implications that grow out of the semantics of > and <"
-  [bindings hypothesis]
-  (reduce augment-one hypothesis bindings))
+    (mapcat (partial comparison-implications string-clause) permutations)))
 
 (defn extract-comparisons
   [bindings expression]
@@ -96,39 +101,5 @@
     [bindings expression]))
 
 (defn factualize-comparisons [expression]
-  (apply augment-hypothesis-with-comparison-implications (extract-comparisons {} expression)))
-
-
-(comment "Not used anymore, but might be useful"
-  (defn normalize-comparison-sign
-    "Express comparison as a combination of >, < and not"
-    [comparison]
-    (let [[lside rside] (:params comparison)]
-      (case (:operator comparison)
-        (:> :<) comparison
-        :>= (expr :not [:< lside rside])
-        :<= (expr :not [:> lside rside])
-        :== (expr :and [:not [:> lside rside]] [:not [:< lside rside]])
-        :!= (expr :or [:> lside rside] [:< lside rside]))))
-
-  (defn normalize-inequality [inequality]
-    (let [operator (:operator inequality)
-          lside-terms (clausal-polynomial-form (first (:params inequality)))
-          flip-sign (> 0 (first (vals lside-terms)))
-          flipped-operator (if flip-sign
-                             (get {:> :<, :>= :<=, :< :>, :<= :>=} operator operator)
-                             operator)
-          positive-lside-terms (if flip-sign
-                                 (multiply-addends -1 lside-terms)
-                                 lside-terms)
-          free-factor (get positive-lside-terms "" 0)
-          lside-without-free-factor (dissoc positive-lside-terms "")
-          lside-string (cpf->str lside-without-free-factor)
-          ]
-      (expr flipped-operator lside-string (- free-factor))))
-
-  (defn normal-inequality-form [inequality]
-    (-> inequality make-comparison-one-sided normalize-inequality))
-  )
-
-
+  (let [[bindings expression] (extract-comparisons {} expression)]
+    [(mapcat binding-implications bindings) expression]))
