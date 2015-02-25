@@ -18,6 +18,7 @@
       (move-nots-inward transformed)
       (expr-transform [:not [:not "x"]] "x" transformed))))
 
+; TODO this is not needed anymore, there are no comparisons at this stage
 (defn- flip-not-expressions [predicate]
   (->> predicate
        (expr-transform [:not [:> "x" "y"]] [:<= "x" "y"])
