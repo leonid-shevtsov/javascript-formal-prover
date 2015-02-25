@@ -14,10 +14,14 @@
           [yes2 no2] c2
           all-yes (set/union yes1 yes2)
           all-no (set/union no1 no2)]
-        [(set/difference all-yes all-no) (set/difference all-no all-yes)]))))
+      (with-meta
+        [(set/difference all-yes all-no) (set/difference all-no all-yes)]
+        {:parents [c1 c2]})))))
 
 (defn clause->str [[yes-disjuncts no-disjuncts]]
-  (s/join " OR " (concat yes-disjuncts (map (partial str "NOT ") no-disjuncts))))
+  (if (every? empty? [yes-disjuncts no-disjuncts])
+    "FALSE"
+    (s/join " OR " (concat yes-disjuncts (map (partial str "NOT ") no-disjuncts)))))
 
 (defn clauses->str [cnf]
   (s/join "\nAND\n" (map clause->str cnf)))
@@ -25,13 +29,19 @@
 (defn empty-clause? [[yes no]]
   (and (empty? yes) (empty? no)))
 
+(defn log-clause [label clause]
+  (log/debugf (str label ": %s") (clause->str clause))
+  (when-let [[c1 c2] (get (meta clause) :parents)]
+    (log/debugf "From: %s  ~AND~  %s" (clause->str c1) (clause->str c2)))
+  clause)
+
 (defn resolution-method [clauses iteration]
   (if (> iteration 1000)
     :exceeded-iteration-limit
-    (if-let [best-clause (log/spyf "Best derived clause: %s" (first (set/difference (derive-resolutions clauses) clauses)))]
+    (if-let [best-clause (log-clause "Best derived clause" (first (set/difference (derive-resolutions clauses) clauses)))]
       (if (empty-clause? best-clause)
         :proved
-        (resolution-method (conj clauses best-clause) (inc iteration))
+        (recur (conj clauses best-clause) (inc iteration))
         )
       (do
         (log/debug "Failed to disprove: " (clauses->str clauses))

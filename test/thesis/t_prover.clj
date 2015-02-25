@@ -6,5 +6,5 @@
 (fact
   "prover can prove truth"
   (subj/resolution-prover true)
-  => :disproved
+  => :proved
   )
