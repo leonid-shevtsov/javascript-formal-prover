@@ -12,8 +12,10 @@
 r = x;
 q = 0;
 
-/* INV: x == r + y * q */
-while (y<r) {
+/* INV: x == q * y + r
+   BOUND: r+1
+ */
+while (y<=r) {
     r = r-y;
     q = 1+q;
 }

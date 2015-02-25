@@ -62,8 +62,8 @@
       :full-conditional-command (let [[_if _paren predicate _paren if-command _else else-command] c-params]
                                   (->Command :if [(translate-expression predicate) (translate-command if-command) (translate-command else-command)]))
 
-      :loop-command (let [[[_loop-comment _star [_invariant _inv invariant] _star] _while _paren predicate _paren command] c-params]
-                             (->Command :while [(translate-expression predicate) (translate-command command) (translate-expression invariant)])))))
+      :loop-command (let [[[_loop-comment _star [_invariant _inv invariant] [_bound _bound bound-function] _star] _while _paren predicate _paren command] c-params]
+                             (->Command :while [(translate-expression predicate) (translate-command command) (translate-expression invariant) (translate-expression bound-function)])))))
 
 (defn parse-tree->program
   "Convert parse tree into a semantic structure"

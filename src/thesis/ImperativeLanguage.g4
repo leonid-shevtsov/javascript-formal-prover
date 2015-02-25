@@ -14,9 +14,10 @@ predicates: predicate ( SEMICOLON predicate)* SEMICOLON?;
 
 commands: command ( SEMICOLON command)* SEMICOLON?;
 
-loopComment: '/*' invariant '*/';
+loopComment: '/*' invariant  boundFunction '*/';
 
 invariant: 'INV:' predicate;
+boundFunction: 'BOUND:' expression;
 
 command:
   identifier '=' expression # assignmentCommand
