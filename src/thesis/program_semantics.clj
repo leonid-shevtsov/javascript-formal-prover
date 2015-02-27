@@ -31,7 +31,7 @@
 
       :not-atom (let [[_not x] e-params]
                   (expr :not (tr x)))
-      :parens-predicate (let [[_paren expression _paren] e-params]
+      (:parens-predicate :parens-expression) (let [[_paren expression _paren] e-params]
                           (tr expression))
 
       :identifier (first e-params)
