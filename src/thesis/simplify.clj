@@ -10,37 +10,40 @@
 
 (defn- simplify-expression-once [expression]
   (let [simplification-rules {; Logic rules
-                               [:implies true "x"]      "x"
-                               [:implies "x" true]      true
-                               [:implies false "x"]     true
-                               [:implies "x" false]     [:not "x"]
-                               [:not [:not "x"]]        "x"
-                               [:or "x" false]          "x"
-                               [:or "x" true]           true
-                               [:and "x" false]         false
-                               [:and "x" true]          "x"
-                               [:or "x" "x"]            "x"
-                               [:and "x" "x"]           "x"
-                               [:or "x" [:not "x"]]     true
-                               [:and "x" [:not "x"]]    false
-                               [:and "x" [:or "x" "y"]] "x"
-                               [:or "x" [:and "x" "y"]] "x"
-                               ; Arithmetic rules
-                               [:+ "x" 0]               "x"
-                               [:* "x" 0]               0
-                               [:* "x" 1]               "x"
-                               [:+ [:- "x" "y"] "y"]    "x"
-                               [:- "x" "x"]             0
-                               [:== "x" "x"]            true
-                               [:<= "x" "x"]            true
-                               [:>= "x" "x"]            true
-                               [:!= "x" "x"]            false
-                               [:< "x" "x"]             false
-                               [:> "x" "x"]             false
-                               }]
-        (reduce
-          (fn [expression [p-from p-to]] (expr-transform p-from p-to expression))
-          expression simplification-rules)))
+                              [:implies true "x"]      "x"
+                              [:implies "x" true]      true
+                              [:implies false "x"]     true
+                              [:implies "x" false]     [:not "x"]
+                              [:not [:not "x"]]        "x"
+                              [:or "x" false]          "x"
+                              [:or "x" true]           true
+                              [:and "x" false]         false
+                              [:and "x" true]          "x"
+                              [:or "x" "x"]            "x"
+                              [:and "x" "x"]           "x"
+                              [:or "x" [:not "x"]]     true
+                              [:and "x" [:not "x"]]    false
+                              [:and "x" [:or "x" "y"]] "x"
+                              [:or "x" [:and "x" "y"]] "x"
+                              ; Arithmetic rules
+                              [:+ "x" 0]               "x"
+                              [:* "x" 0]               0
+                              [:* "x" 1]               "x"
+                              [:+ [:- "x" "y"] "y"]    "x"
+                              [:- "x" "x"]             0
+                              [:- "x" 0]               "x"
+                              [(keyword "/") "x" 1]    "x"
+                              [(keyword "/") 0 "x"]    0
+                              [:== "x" "x"]            true
+                              [:<= "x" "x"]            true
+                              [:>= "x" "x"]            true
+                              [:!= "x" "x"]            false
+                              [:< "x" "x"]             false
+                              [:> "x" "x"]             false
+                              }]
+    (reduce
+      (fn [expression [p-from p-to]] (expr-transform p-from p-to expression))
+      expression simplification-rules)))
 
 (defn- evaluate-constants
   "Find constant sub-expressions in expression and evaluate them"
