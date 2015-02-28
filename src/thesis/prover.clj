@@ -48,6 +48,13 @@
         :failed-to-prove)
       )))
 
+(defn trivial-solution [[yes no]]
+  (cond
+    ; Take note - trivial solution deals with the counter example
+    (and (= yes #{true}) (empty? no)) :disproved
+    (and (= yes #{false}) (empty? no)) :proved
+    :default :failed-to-prove))
+
 (defn resolution-prover [facts hypothesis]
   (let [counter-hypothesis (expr :not hypothesis)
         _ (log/spyf "Simplified counter hypothesis: %s" (simplify-expression counter-hypothesis))
@@ -55,4 +62,6 @@
         cnf (clausal-normal-form provable-statement)
         _ (log/spyf "Initial clauses: %s" (clauses->str cnf))
         ]
-    (resolution-method cnf 0)))
+    (if (= 1 (count cnf))
+      (trivial-solution (first cnf))
+      (resolution-method cnf 0))))
