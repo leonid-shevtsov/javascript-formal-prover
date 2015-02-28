@@ -17,6 +17,22 @@
       (recur transformed)
       transformed)))
 
+; TODO maybe (/ a const) = (* a 1/const)
+(defn move-division-outward
+  [predicate]
+  (let [transformed (->> predicate
+                         (expr-transform [:+ [:/ "a" "b"] [:/ "c" "d"]]
+                                         [:/ [:+ [:* "a" "d"] [:* "c" "b"]] [:* "b" "d"]])
+                         (expr-transform [:* "a" [:/ "b" "c"]] [:/ [:* "a" "b"] "c"])
+                         (expr-transform [:+ "a" [:/ "b" "c"]] [:/ [:+ [:* "a" "c"] "b"] "c"])
+                         (expr-transform [:/ "a" [:/ "b" "c"]] [:/ "a" [:* "b" "c"]])
+                         (expr-transform [:/ [:/ "a" "b"] "c"] [:/ "a" [:* "b" "c"]])
+                         )]
+    (if (not= predicate transformed)
+      (recur transformed)
+      transformed)))
+
+
 (defn polynomial-clauses [normalized-polynomial]
   (map (partial expr-clauses :*) (expr-clauses :+ normalized-polynomial)))
 
@@ -42,8 +58,6 @@
 
 (defn multiply-cpf [factor terms]
   (into {} (map (fn [[t-vars t-factor]] [t-vars (/ t-factor factor)]) terms)))
-
-
 
 (defn normalize-cpf
   "Given CPF, return [factor-for-highest-power-clause clauses-with-highest-power-clause-equal-to-1]"
