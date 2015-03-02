@@ -32,8 +32,8 @@
                               [:+ [:- "x" "y"] "y"]    "x"
                               [:- "x" "x"]             0
                               [:- "x" 0]               "x"
-                              [(keyword "/") "x" 1]    "x"
-                              [(keyword "/") 0 "x"]    0
+                              [:/ "x" 1]               "x"
+                              [:/ 0 "x"]               0
                               [:== "x" "x"]            true
                               [:<= "x" "x"]            true
                               [:>= "x" "x"]            true
@@ -48,20 +48,20 @@
 (defn- evaluate-constants
   "Find constant sub-expressions in expression and evaluate them"
   [expression]
-  (let [expression-operators {:and          #(and %1 %2)
-                              :or           #(or %1 %2)
-                              :not          not
-                              :implies      #(or (not %1) %2)
-                              :+            +
-                              :-            -
-                              :*            *
-                              (keyword "/") /
-                              :==           =
-                              :!=           not=
-                              :>            >
-                              :<            <
-                              :>=           >=
-                              :<=           <=}]
+  (let [expression-operators {:and     #(and %1 %2)
+                              :or      #(or %1 %2)
+                              :not     not
+                              :implies #(or (not %1) %2)
+                              :+       +
+                              :-       -
+                              :*       *
+                              :/       /
+                              :==      =
+                              :!=      not=
+                              :>       >
+                              :<       <
+                              :>=      >=
+                              :<=      <=}]
     (if (expr? expression)
       (let [with-evaluated-params (expr-map evaluate-constants expression)]
         (if (every? primitive? (:params with-evaluated-params))
