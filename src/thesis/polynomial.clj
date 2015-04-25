@@ -88,4 +88,6 @@
     (str addend1 "+" addend2)))
 
 (defn cpf->str [clausal-polynomial-form]
-  (reduce join-addends (map addend->str clausal-polynomial-form)))
+  (if (empty? clausal-polynomial-form)
+    "0"
+    (reduce join-addends (map addend->str clausal-polynomial-form))))

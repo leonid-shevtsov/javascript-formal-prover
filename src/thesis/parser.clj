@@ -1,6 +1,6 @@
 (ns thesis.parser
   (:require [clojure.string :as s])
-  (:import (org.antlr.v4.runtime ANTLRInputStream CommonTokenStream)
+  (:import (org.antlr.v4.runtime ANTLRInputStream CommonTokenStream BailErrorStrategy)
            (org.antlr.v4.runtime.tree ParseTree)
            (thesis ImperativeLanguageLexer ImperativeLanguageParser)))
 
@@ -10,6 +10,7 @@
   (let [lexer (ImperativeLanguageLexer. (ANTLRInputStream. source-code))
         tokens (CommonTokenStream. lexer)
         parser (ImperativeLanguageParser. tokens)]
+    (.setErrorHandler parser (BailErrorStrategy.))
     (.provingStructure parser)))
 
 (defn- context-keyword

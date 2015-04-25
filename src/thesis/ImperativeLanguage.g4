@@ -46,6 +46,7 @@ parensExpression: '(' expression ')';
 predicate:
   predicate AND_OPERATOR predicate # andPredicate
   | predicate OR_OPERATOR predicate # orPredicate
+  | predicate IMPLIES_OPERATOR predicate # orPredicate
   | predicateAtom # atomPredicate
   ;
 
@@ -81,6 +82,7 @@ NEG_OPERATOR: MINUS;
 AND_OPERATOR: '&&';
 OR_OPERATOR: '||';
 NOT_OPERATOR: '!';
+IMPLIES_OPERATOR: '=>';
 
 NUMBER: [0-9]+;
 

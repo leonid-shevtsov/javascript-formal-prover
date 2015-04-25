@@ -26,6 +26,8 @@
                        (expr :and (tr x) (tr y)))
       :or-predicate (let [[x _or y] e-params]
                       (expr :or (tr x) (tr y)))
+      :implies-predicate (let [[x _implies y] e-params]
+                      (expr :implies (tr x) (tr y)))
       (:mult-expression :sum-expression :comparison) (let [[x operator y] e-params]
                                                        (expr (keyword operator) (tr x) (tr y)))
 
