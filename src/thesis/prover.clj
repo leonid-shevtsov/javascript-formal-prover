@@ -21,7 +21,8 @@
 (defn clause->str [[yes-disjuncts no-disjuncts]]
   (if (every? empty? [yes-disjuncts no-disjuncts])
     "FALSE"
-    (s/join " OR " (concat yes-disjuncts (map (partial str "NOT ") no-disjuncts)))))
+    (s/join " OR " (concat yes-disjuncts
+                           (map (partial str "NOT ") no-disjuncts)))))
 
 (defn clauses->str [cnf]
   (s/join "\nAND\n" (map clause->str cnf)))
@@ -38,7 +39,10 @@
 (defn resolution-method [clauses iteration]
   (if (> iteration 1000)
     :exceeded-iteration-limit
-    (if-let [best-clause (log-clause "Best derived clause" (first (set/difference (derive-resolutions clauses) clauses)))]
+    (if-let [best-clause
+             (log-clause "Best derived clause"
+                         (first (set/difference (derive-resolutions clauses)
+                                                clauses)))]
       (if (empty-clause? best-clause)
         :proved
         (recur (conj clauses best-clause) (inc iteration))
@@ -57,11 +61,15 @@
 
 (defn resolution-prover [facts hypothesis]
   (let [counter-hypothesis (expr :not hypothesis)
-        _ (log/spyf "Simplified counter hypothesis: %s" (simplify-expression counter-hypothesis))
+
+        _ (log/spyf "Simplified counter hypothesis: %s"
+                    (simplify-expression counter-hypothesis))
+
         provable-statement (reduce #(expr :and %1 %2) counter-hypothesis facts)
+
         cnf (clausal-normal-form provable-statement)
-        _ (log/spyf "Initial clauses: %s" (clauses->str cnf))
-        ]
+
+        _ (log/spyf "Initial clauses: %s" (clauses->str cnf))]
     (if (= 1 (count cnf))
       (trivial-solution (first cnf))
       (resolution-method cnf 0))))

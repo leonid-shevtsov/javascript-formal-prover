@@ -12,7 +12,9 @@
 (defn distribute-products
   "Convert A * (B + C) to A*B + A*C"
   [expression]
-  (let [transformed (expr-transform [:* "a" [:+ "b" "c"]] [:+ [:* "a" "b"] [:* "a" "c"]] expression)]
+  (let [transformed (expr-transform [:* "a" [:+ "b" "c"]]
+                                    [:+ [:* "a" "b"] [:* "a" "c"]]
+                                    expression)]
     (if (not= expression transformed)
       (recur transformed)
       transformed)))
@@ -20,14 +22,15 @@
 ; TODO maybe (/ a const) = (* a 1/const)
 (defn move-division-outward
   [predicate]
-  (let [transformed (->> predicate
-                         (expr-transform [:+ [:/ "a" "b"] [:/ "c" "d"]]
-                                         [:/ [:+ [:* "a" "d"] [:* "c" "b"]] [:* "b" "d"]])
-                         (expr-transform [:* "a" [:/ "b" "c"]] [:/ [:* "a" "b"] "c"])
-                         (expr-transform [:+ "a" [:/ "b" "c"]] [:/ [:+ [:* "a" "c"] "b"] "c"])
-                         (expr-transform [:/ "a" [:/ "b" "c"]] [:/ "a" [:* "b" "c"]])
-                         (expr-transform [:/ [:/ "a" "b"] "c"] [:/ "a" [:* "b" "c"]])
-                         )]
+  (let [transformed
+        (->> predicate
+           (expr-transform [:+ [:/ "a" "b"] [:/ "c" "d"]]
+                           [:/ [:+ [:* "a" "d"] [:* "c" "b"]] [:* "b" "d"]])
+           (expr-transform [:* "a" [:/ "b" "c"]] [:/ [:* "a" "b"] "c"])
+           (expr-transform [:+ "a" [:/ "b" "c"]] [:/ [:+ [:* "a" "c"] "b"] "c"])
+           (expr-transform [:/ "a" [:/ "b" "c"]] [:/ "a" [:* "b" "c"]])
+           (expr-transform [:/ [:/ "a" "b"] "c"] [:/ "a" [:* "b" "c"]])
+           )]
     (if (not= predicate transformed)
       (recur transformed)
       transformed)))
@@ -40,7 +43,8 @@
   "Returns a normalized hash of (sorted variable list) -> numeric factor"
   [polynomial-terms]
   (reduce (fn [term-factors new-term]
-            (let [factor-key (s/join "*" (reverse (sort (filter identifier? new-term))))
+            (let [factor-key
+                    (s/join "*" (reverse (sort (filter identifier? new-term))))
                   factor (reduce * 1 (filter number? new-term))
                   existing-factor (get term-factors factor-key 0)]
               (assoc term-factors factor-key (+ existing-factor factor))))
@@ -50,9 +54,15 @@
   (into {} (remove (fn [[t-vars t-factor]] (zero? t-factor)) terms)))
 
 (defn clausal-polynomial-form
-  "Given an algebraic expression, produce sorted map of (variable multiplier) => (constant multiplier)"
+  "Given an algebraic expression, produce sorted map of
+  (variable multiplier) => (constant multiplier)"
   [expression]
-  (-> expression differences-to-sums distribute-products polynomial-clauses join-similar-clauses remove-zeroes-from-cpf))
+  (-> expression
+      differences-to-sums
+      distribute-products
+      polynomial-clauses
+      join-similar-clauses
+      remove-zeroes-from-cpf))
 
 ;; implementation of normalize-cpf
 
@@ -60,7 +70,8 @@
   (into {} (map (fn [[t-vars t-factor]] [t-vars (/ t-factor factor)]) terms)))
 
 (defn normalize-cpf
-  "Given CPF, return [factor-for-highest-power-clause clauses-with-highest-power-clause-equal-to-1]"
+  "Given CPF, return
+  [factor-for-max-power-clause clauses-with-max-power-clause-equal-to-1]"
   [clausal-polynomial-form]
   (let [lex-first-factor (first (vals clausal-polynomial-form))]
     [lex-first-factor (multiply-cpf lex-first-factor clausal-polynomial-form)]))
@@ -68,7 +79,8 @@
 ;; implemetation of separate-scalar
 
 (defn separate-scalar
-  "Given clausal polynomial form, returns [cpf-without-scalar-factor scalar-factor-or-0]"
+  "Given clausal polynomial form, returns
+  [cpf-without-scalar-factor scalar-factor-or-0]"
   [cpf]
   [(dissoc cpf "") (get cpf "" 0)])
 

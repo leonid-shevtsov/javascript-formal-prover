@@ -7,19 +7,38 @@
             [thesis.prover :refer [resolution-prover]]
             [thesis.simplify :refer [simplify-expression]]
             [clojure.tools.logging :as log]
-            [clojure.string :as s]))
+            [clojure.string :as s])
+  (:import (org.antlr.v4.runtime.misc ParseCancellationException)
+           (java.io FileNotFoundException)))
 
-(defn prove-program-from-filename [filename]
-  (let [source-code (slurp filename)
-        parse-tree (parse source-code)
-        program (parse-tree->program parse-tree)
-        correctness-hypothesis (log/spyf "Program correctness hypothesis: %s"
-                                         (program-correctness-hypothesis program))
-        [comparison-facts pure-correctness-hypothesis] (factualize-comparisons correctness-hypothesis)
-        _ (log/spyf "Pure hypothesis: %s" (simplify-expression pure-correctness-hypothesis))
-        _ (log/spyf "Comparison facts:\n%s" (s/join "\n" (map str comparison-facts)))
-        prover-conclusion (resolution-prover comparison-facts pure-correctness-hypothesis)]
-    prover-conclusion))
+(defn parse-program-from-filename [filename]
+  (try
+    (-> filename
+        slurp
+        parse
+        parse-tree->program)
+    (catch FileNotFoundException _
+      (log/errorf "File not found: %s" filename))
+    (catch ParseCancellationException _
+      (log/errorf "Failed to parse: %s" filename))))
+
+(defn prove-program [program]
+  (let [correctness-hypothesis (program-correctness-hypothesis program)
+
+        _ (log/spyf "Program correctness hypothesis:\n%s"
+                    correctness-hypothesis)
+
+        [comparison-axioms factualized-hypothesis]
+          (factualize-comparisons correctness-hypothesis)
+
+        _ (log/spyf "After abstracting comparisons:\n%s"
+                    (simplify-expression factualized-hypothesis))
+        _ (log/spyf "Axioms about comparisons:\n%s"
+                    (s/join "\n" (map str comparison-axioms)))]
+
+    (resolution-prover comparison-axioms factualized-hypothesis)))
 
 (defn -main [filename & args]
-  (println (if (prove-program-from-filename filename) "Proved" "Disproved")))
+  (if-let [program (parse-program-from-filename filename)]
+    (println (if (prove-program program) "Proved" "Disproved"))
+    (println "Error")))

@@ -1,12 +1,26 @@
 (ns thesis.simplify
-  (:require [thesis.algebra :refer [expr expr-map expr-transform expr? primitive?]]))
+  (:require [thesis.algebra :refer [expr expr-map expr-transform expr?
+                                    primitive?]]))
 
 ; Reduces a 500-char expression into a 120-char expression through the power
 ; of logic and arithmetic equalities and evaluation of constant expressions
-; (str (-> "division.js" slurp parse parse-tree->program weakest-predicate conjunctive-normal-form))
-; (AND (== x (+ x (* y 0))) (AND (AND (AND (AND (OR (OR (>= y x) (!= x (+ x (* y 0)))) (== x (+ (* (+ 1 0) y) (- x y)))) (OR (OR (>= y x) (!= x (+ x (* y 0)))) (< (- x y) y))) (OR (OR (>= y x) (!= x (+ x (* y 0)))) (>= (+ 1 0) 0))) (OR (OR (>= y x) (!= x (+ x (* y 0)))) (>= (- x y) 0))) (AND (AND (AND (OR (OR (< y x) (!= x (+ x (* y 0)))) (== x (+ (* 0 y) x))) (OR (OR (< y x) (!= x (+ x (* y 0)))) (< x y))) (OR (OR (< y x) (!= x (+ x (* y 0)))) (>= 0 0))) (OR (OR (< y x) (!= x (+ x (* y 0)))) (>= x 0)))))
-; (str (-> "division.js" slurp parse parse-tree->program weakest-predicate conjunctive-normal-form simplify-expression evaluate-constants simplify-expression))
-; (AND (AND (OR (>= y x) (< (- x y) y)) (OR (>= y x) (>= (- x y) 0))) (AND (OR (< y x) (< x y)) (OR (< y x) (>= x 0))))
+
+; (str (-> "division.js"
+;          slurp parse parse-tree->program weakest-predicate
+;          conjunctive-normal-form))
+; (AND (== x (+ x (* y 0))) (AND (AND (AND (AND (OR (OR (>= y x) (!= x (+ x (* y
+; 0)))) (== x (+ (* (+ 1 0) y) (- x y)))) (OR (OR (>= y x) (!= x (+ x (* y 0))))
+; (< (- x y) y))) (OR (OR (>= y x) (!= x (+ x (* y 0)))) (>= (+ 1 0) 0))) (OR
+; (OR (>= y x) (!= x (+ x (* y 0)))) (>= (- x y) 0))) (AND (AND (AND (OR (OR
+; (< y x) (!= x (+ x (* y 0)))) (== x (+ (* 0 y) x))) (OR (OR (< y x) (!= x (+ x
+; (* y 0)))) (< x y))) (OR (OR (< y x) (!= x (+ x (* y 0)))) (>= 0 0))) (OR (OR
+; (< y x) (!= x (+ x (* y 0)))) (>= x 0)))))
+
+; (str (-> "division.js"
+;          slurp parse parse-tree->program weakest-predicate
+;          conjunctive-normal-form simplify-expression))
+; (AND (AND (OR (>= y x) (< (- x y) y)) (OR (>= y x) (>= (- x y) 0))) (AND (OR
+; (< y x) (< x y)) (OR (< y x) (>= x 0))))
 
 (defn- simplify-expression-once [expression]
   (let [simplification-rules {; Logic rules
@@ -65,7 +79,8 @@
     (if (expr? expression)
       (let [with-evaluated-params (expr-map evaluate-constants expression)]
         (if (every? primitive? (:params with-evaluated-params))
-          (let [operator-fn (get expression-operators (:operator with-evaluated-params))
+          (let [operator-fn
+                  (get expression-operators (:operator with-evaluated-params))
                 params (:params with-evaluated-params)]
             (apply operator-fn params))
           with-evaluated-params))

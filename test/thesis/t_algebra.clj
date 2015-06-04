@@ -38,7 +38,8 @@
 
   (fact
     "expr-match matches nested expressions"
-    (algebra/expr-match [:not [:and "x" "y"]] (algebra/expr :not '(:and "a" "b")))
+    (algebra/expr-match [:not [:and "x" "y"]]
+                        (algebra/expr :not '(:and "a" "b")))
     => {"x" "a", "y" "b"})
 
   (fact
@@ -50,20 +51,24 @@
     "expr-match can handle commutative sub-expressions in different orientation"
     ; Right now each sub-expression is matched separately
     ; Need to search and back-track instead.
-    ; For example - from x OR y = a OR b we bind x=a, y=b, but we could also bind x=b, y=a
+    ; For example - from x OR y = a OR b we bind x=a, y=b,
+    ; but we could also bind x=b, y=a
     ; which would then let x => y = b => a
-    (algebra/expr-match [:and [:or "x" "y"] [:implies "x" "y"]] (algebra/expr :and [:or "a" "b"] [:implies "b" "a"]))
+    (algebra/expr-match [:and [:or "x" "y"] [:implies "x" "y"]]
+                        (algebra/expr :and [:or "a" "b"] [:implies "b" "a"]))
     => {"x" "b", "y" "a"}
     )
 
   (fact
     "for commutative expressions, expr-match matches in reverse, too"
-    (algebra/expr-match [:and "x" [:not "y"]] (algebra/expr :and [:not "a"] "b"))
+    (algebra/expr-match [:and "x" [:not "y"]]
+                        (algebra/expr :and [:not "a"] "b"))
     => {"x" "b", "y" "a"})
 
   (fact
     "for non-commutative expressions, expr-match does NOT match in reverse"
-    (algebra/expr-match [:implies "x" [:not "y"]] (algebra/expr :implies [:not "a"] "b"))
+    (algebra/expr-match [:implies "x" [:not "y"]]
+                        (algebra/expr :implies [:not "a"] "b"))
     => falsey)
 
   (fact
@@ -105,7 +110,8 @@
     "transforms parts of expressions"
     (algebra/expr-transform [:not [:not "x"]]
                             "x"
-                            (algebra/expr :and [:not [:not "x"]] [:not [:not "y"]]))
+                            (algebra/expr :and [:not [:not "x"]]
+                                               [:not [:not "y"]]))
     => (algebra/expr :and "x" "y")
 
     (algebra/expr-transform [:not [:not "x"]]
@@ -130,6 +136,7 @@
   )
 
 (fact
-  "top-level expression for expr-clauses must match clause-operator, or the result will have only one clause"
+  "top-level expression for expr-clauses must match clause-operator, or the
+  result will have only one clause"
   (algebra/expr-clauses :* (algebra/expr :+ [:+ 1 2] [:* [:+ 3 4] [:+ 5 6]]))
   => [ (algebra/expr :+ [:+ 1 2] [:* [:+ 3 4] [:+ 5 6]]) ])
