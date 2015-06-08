@@ -3,10 +3,13 @@
             [clojure.string :as s]
             [thesis.algebra :refer [expr]]
             [thesis.clausal-normal-form :refer [clausal-normal-form clause-set]]
-            [thesis.simplify :refer [simplify-expression]]
+            [thesis.simplify :refer [evaluate-constants simplify-expression]]
+            [thesis.identifiers :refer [replace-identifier-in-expression identifiers-in-expression]]
             [clojure.set :as set]))
 
 ; https://en.wikipedia.org/wiki/Resolution_(logic)
+
+(def EVALUATION-METHOD-VARIABLE-LIMIT 20) ; up to 1000000 evaluations
 
 (defn derive-resolutions [clauses]
   (clause-set (for [c1 clauses c2 clauses :when (not= c1 c2)]
@@ -59,17 +62,47 @@
     (and (= yes #{false}) (empty? no)) :proved
     :default :failed-to-prove))
 
-(defn resolution-prover [facts hypothesis]
+(defn evaluation-method
+  ([expression identifiers bindings]
+
+  (if-let [identifier (first identifiers)]
+    (every? true?
+            (map #(evaluation-method
+                   (replace-identifier-in-expression identifier % expression)
+                   (rest identifiers)
+                   (assoc bindings identifier %))
+                 #{true false}))
+    (or (false? (evaluate-constants expression))
+        (and (log/spyf "Counter-example: %s" bindings) false))))
+
+  ([expression identifiers] (evaluation-method expression identifiers {})))
+
+(defn prover [facts hypothesis]
+  {:post (#{:proved :disproved :failed-to-prove} %)}
   (let [counter-hypothesis (expr :not hypothesis)
 
         _ (log/spyf "Simplified counter hypothesis: %s"
                     (simplify-expression counter-hypothesis))
 
-        provable-statement (reduce #(expr :and %1 %2) counter-hypothesis facts)
-
-        cnf (clausal-normal-form provable-statement)
-
-        _ (log/spyf "Initial clauses: %s" (clauses->str cnf))]
-    (if (= 1 (count cnf))
-      (trivial-solution (first cnf))
-      (resolution-method cnf 0))))
+        provable-statement (simplify-expression
+                             (reduce #(expr :and %1 %2)
+                                     counter-hypothesis
+                                     facts))
+        identifiers (identifiers-in-expression provable-statement)]
+    (if (< (count identifiers) EVALUATION-METHOD-VARIABLE-LIMIT)
+      (do
+        (log/spyf "Using evaluation method for %d variables"
+                  (count identifiers))
+        (log/spyf "Provable statement %s"
+                  provable-statement)
+        (if (evaluation-method provable-statement identifiers)
+          :proved
+          :failed-to-prove))
+      (do
+        (log/spyf "Using resolution method for %d variables"
+                  (count identifiers))
+        (let [cnf (clausal-normal-form provable-statement)
+              _ (log/spyf "Initial clauses: %s" (clauses->str cnf))]
+          (if (= 1 (count cnf))
+            (trivial-solution (first cnf))
+            (resolution-method cnf 0)))))))

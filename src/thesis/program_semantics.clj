@@ -1,5 +1,5 @@
 (ns thesis.program-semantics
-  (:use thesis.algebra))
+  (:require [thesis.algebra :refer [expr]]))
 
 (defrecord Command [type params])
 

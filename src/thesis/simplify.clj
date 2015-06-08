@@ -59,7 +59,7 @@
       (fn [expression [p-from p-to]] (expr-transform p-from p-to expression))
       expression simplification-rules)))
 
-(defn- evaluate-constants
+(defn evaluate-constants
   "Find constant sub-expressions in expression and evaluate them"
   [expression]
   (let [expression-operators {:and     #(and %1 %2)

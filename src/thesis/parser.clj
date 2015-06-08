@@ -10,9 +10,11 @@
   [source-code]
   (let [lexer (ImperativeLanguageLexer. (ANTLRInputStream. source-code))
         tokens (CommonTokenStream. lexer)
-        parser (ImperativeLanguageParser. tokens)]
-    (.setErrorHandler parser (BailErrorStrategy.))
-    (.provingStructure parser)))
+        parser (ImperativeLanguageParser. tokens)
+        proving-structure (.provingStructure parser)]
+    (if (zero? (.getNumberOfSyntaxErrors parser))
+      proving-structure
+      nil)))
 
 (defn- context-keyword
   "For object of class Something$SomeParseContext, return :some-parse"
@@ -38,4 +40,6 @@
 (defn parse
   "Produce a parse tree from source code"
   [source-code]
-  (-> source-code antlr-parse context->seq))
+  (if-let [proving-structure (-> source-code antlr-parse)]
+    (context->seq proving-structure)
+    nil))

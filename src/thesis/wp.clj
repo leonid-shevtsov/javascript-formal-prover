@@ -1,23 +1,9 @@
 (ns thesis.wp
-  (:require [thesis.algebra :refer [expr expr-map expr? identifier?]]
+  (:require [thesis.algebra :refer [expr]]
+            [thesis.identifiers :refer [replace-identifier-in-expression]]
             [clojure.tools.logging :as log]))
 
 (declare command-wp)
-
-(defn replace-identifier-in-expression
-  [identifier value construct]
-  (cond
-    (expr? construct)
-      (expr-map
-        (partial replace-identifier-in-expression identifier value) construct)
-
-    (identifier? construct)
-      (if (= construct identifier)
-          value
-          construct)
-
-    :else construct))
-
 
 (defn conditional-wp [predicate if-command else-command postcondition]
   (expr :and

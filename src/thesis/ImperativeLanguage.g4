@@ -35,9 +35,9 @@ expression:
   | atom # atomExpression
   ;
 
-negAtom: NEG_OPERATOR atom;
+atom: negAtom | numericConstant | identifier | parensExpression;
 
-atom: notAtom | numericConstant | identifier | parensExpression;
+negAtom: NEG_OPERATOR atom;
 
 parensExpression: '(' expression ')';
 
@@ -84,10 +84,10 @@ OR_OPERATOR: '||';
 NOT_OPERATOR: '!';
 IMPLIES_OPERATOR: '=>';
 
-NUMBER: [0-9]+;
+NUMBER: '-'?[0-9]+;
 
 ID: [a-zA-Z_][a-zA-Z_0-9]*;
 
 SEMICOLON: ';';
 
-WS: [\n\r\b\t\f ]+ -> skip;
+WS: ('//'  ~( '\r' | '\n' )*  | [\n\r\b\t\f ]+) -> skip;

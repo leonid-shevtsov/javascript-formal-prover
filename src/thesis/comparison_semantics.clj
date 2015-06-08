@@ -13,7 +13,7 @@
   "Convert A _sign_ B to (A - B) _sign_ 0"
   [comparison]
   (let [[lside rside] (:params comparison)]
-    (if (zero? rside)
+    (if (and (number? rside) (zero? rside))
       comparison
       (expr (:operator comparison) (expr :+ lside (expr :* -1 rside)) 0))))
 
@@ -89,7 +89,7 @@
                         (and (< x y) (expr :implies [:not exprx] [:not expry]))]
               [:< :==] [(and (<= x y) (expr :implies exprx [:not expry]))
                         (and (> x y) (expr :implies [:not exprx] [:not expry]))]
-              [:== :==] [(and (not= x y) (expr :implies exprx [:not expr y]))]
+              [:== :==] [(and (not= x y) (expr :implies exprx [:not expry]))]
               [:== :>] [(and (> x y) (expr :implies exprx expry))
                         (and (<= x y) (expr :implies exprx [:not expry]))]
               [:== :<] [(and (< x y) (expr :implies exprx expry))
