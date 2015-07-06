@@ -5,16 +5,35 @@
   numeric and boolean primitive constants"
   (:require [clojure.string :as s]))
 
+(def operator-labels
+  {
+   :not "¬"
+   :and "∧"
+   :or "∨"
+   :implies "⇒"
+  })
 (defrecord Expression
   [operator params]
 
   Object
   (toString [this]
-    (str "("
-         (-> this :operator name s/upper-case)
-         " "
-         (s/join " " (map str (:params this)))
-         ")")))
+    (let [operator (:operator this)
+          operator-label (get operator-labels operator (-> operator name s/upper-case))
+          first-param (str (first (:params this)))
+          second-param (str (second (:params this)))]
+      (if (< 1 (count (:params this)))
+        (str "("
+             first-param
+             " "
+             operator-label
+             " "
+             second-param
+
+             ")")
+        (str
+          operator-label
+          first-param
+          )))))
 
 (defmethod print-method Expression [expr ^java.io.Writer writer]
   (.write writer (str expr)))
