@@ -1,5 +1,5 @@
-(ns thesis.polynomial
-  (:require [thesis.algebra :refer [expr-transform expr-clauses identifier?]]
+(ns jsfp.polynomial
+  (:require [jsfp.algebra :refer [expr-transform expr-clauses identifier?]]
             [clojure.string :as s]))
 
 ;; implementation of clausal-polynomial form

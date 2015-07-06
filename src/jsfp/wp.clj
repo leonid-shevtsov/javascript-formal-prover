@@ -1,6 +1,6 @@
-(ns thesis.wp
-  (:require [thesis.algebra :refer [expr]]
-            [thesis.identifiers :refer [replace-identifier-in-expression]]
+(ns jsfp.wp
+  (:require [jsfp.algebra :refer [expr]]
+            [jsfp.identifiers :refer [replace-identifier-in-expression]]
             [clojure.tools.logging :as log]))
 
 (declare command-wp)

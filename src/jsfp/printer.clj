@@ -1,4 +1,4 @@
-(ns thesis.printer)
+(ns jsfp.printer)
 
 (declare print-tree)
 

@@ -1,9 +1,9 @@
-(ns thesis.comparison-semantics
+(ns jsfp.comparison-semantics
   (:require [clojure.string :as s]
             [clojure.set :as set]
-            [thesis.algebra :refer [expr expr-transform expr-construct
+            [jsfp.algebra :refer [expr expr-transform expr-construct
                                     expr-clauses expr? identifier?]]
-            [thesis.polynomial :refer [clausal-polynomial-form normalize-cpf
+            [jsfp.polynomial :refer [clausal-polynomial-form normalize-cpf
                                        cpf->str separate-scalar]]
             [clojure.tools.logging :as log]))
 

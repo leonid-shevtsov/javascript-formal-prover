@@ -1,8 +1,8 @@
-(ns thesis.clausal-normal-form
+(ns jsfp.clausal-normal-form
   (:require
     [clojure.string :as s]
-    [thesis.algebra :refer [expr-transform expr-atom? expr-clauses expr?]]
-    [thesis.simplify :refer [simplify-expression]]
+    [jsfp.algebra :refer [expr-transform expr-atom? expr-clauses expr?]]
+    [jsfp.simplify :refer [simplify-expression]]
     [clojure.set :as set]))
 
 (defn- de-implify

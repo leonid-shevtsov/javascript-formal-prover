@@ -1,5 +1,5 @@
-(ns thesis.identifiers
-  (:require [thesis.algebra :refer [expr? expr-map identifier?]]))
+(ns jsfp.identifiers
+  (:require [jsfp.algebra :refer [expr? expr-map identifier?]]))
 
 (defn replace-identifier-in-expression
   [identifier value construct]

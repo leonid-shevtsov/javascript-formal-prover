@@ -1,11 +1,11 @@
-(ns thesis.core
+(ns jsfp.core
   (:gen-class)
-  (:require [thesis.parser :refer [parse]]
-            [thesis.program-semantics :refer [parse-tree->program]]
-            [thesis.wp :refer [program-correctness-hypothesis]]
-            [thesis.comparison-semantics :refer [factualize-comparisons]]
-            [thesis.prover :refer [prover]]
-            [thesis.simplify :refer [simplify-expression]]
+  (:require [jsfp.parser :refer [parse]]
+            [jsfp.program-semantics :refer [parse-tree->program]]
+            [jsfp.wp :refer [program-correctness-hypothesis]]
+            [jsfp.comparison-semantics :refer [factualize-comparisons]]
+            [jsfp.prover :refer [prover]]
+            [jsfp.simplify :refer [simplify-expression]]
             [clojure.tools.logging :as log]
             [clojure.string :as s])
   (:import (org.antlr.v4.runtime.misc ParseCancellationException)

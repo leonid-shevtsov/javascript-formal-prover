@@ -1,5 +1,5 @@
-(ns thesis.program-semantics
-  (:require [thesis.algebra :refer [expr]]))
+(ns jsfp.program-semantics
+  (:require [jsfp.algebra :refer [expr]]))
 
 (defrecord Command [type params])
 

@@ -1,10 +1,10 @@
-(ns thesis.prover
+(ns jsfp.prover
   (:require [clojure.tools.logging :as log]
             [clojure.string :as s]
-            [thesis.algebra :refer [expr]]
-            [thesis.clausal-normal-form :refer [clausal-normal-form clause-set]]
-            [thesis.simplify :refer [evaluate-constants simplify-expression]]
-            [thesis.identifiers :refer [replace-identifier-in-expression identifiers-in-expression]]
+            [jsfp.algebra :refer [expr]]
+            [jsfp.clausal-normal-form :refer [clausal-normal-form clause-set]]
+            [jsfp.simplify :refer [evaluate-constants simplify-expression]]
+            [jsfp.identifiers :refer [replace-identifier-in-expression identifiers-in-expression]]
             [clojure.set :as set]))
 
 ; https://en.wikipedia.org/wiki/Resolution_(logic)

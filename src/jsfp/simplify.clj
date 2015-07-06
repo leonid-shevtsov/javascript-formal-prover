@@ -1,5 +1,5 @@
-(ns thesis.simplify
-  (:require [thesis.algebra :refer [expr expr-map expr-transform expr?
+(ns jsfp.simplify
+  (:require [jsfp.algebra :refer [expr expr-map expr-transform expr?
                                     primitive?]]))
 
 ; Reduces a 500-char expression into a 120-char expression through the power

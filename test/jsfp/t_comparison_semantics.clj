@@ -1,7 +1,7 @@
-(ns thesis.t-comparison-semantics
+(ns jsfp.t-comparison-semantics
   (:use midje.sweet)
-  (:require [thesis.comparison-semantics :as subj]
-            [thesis.algebra :refer [expr]]))
+  (:require [jsfp.comparison-semantics :as subj]
+            [jsfp.algebra :refer [expr]]))
 
 (fact
   "make-comparisons-one-sided carries everything to one side of the comparison"

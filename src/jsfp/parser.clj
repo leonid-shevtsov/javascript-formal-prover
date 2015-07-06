@@ -1,9 +1,9 @@
-(ns thesis.parser
+(ns jsfp.parser
   (:require [clojure.string :as s])
   (:import (org.antlr.v4.runtime ANTLRInputStream CommonTokenStream
                                  BailErrorStrategy)
            (org.antlr.v4.runtime.tree ParseTree)
-           (thesis ImperativeLanguageLexer ImperativeLanguageParser)))
+           (jsfp ImperativeLanguageLexer ImperativeLanguageParser)))
 
 (defn- antlr-parse
   "Invokes ANTLR parser to produce a raw parse structure from source code"

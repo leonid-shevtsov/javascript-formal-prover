@@ -1,7 +1,7 @@
-(ns thesis.t-polynomial
+(ns jsfp.t-polynomial
   (:use midje.sweet)
-  (:require [thesis.polynomial :as subj]
-            [thesis.algebra :refer [expr]]))
+  (:require [jsfp.polynomial :as subj]
+            [jsfp.algebra :refer [expr]]))
 
 (fact
   "clausal polynomial form produces CPF"

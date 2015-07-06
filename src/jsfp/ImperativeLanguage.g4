@@ -1,6 +1,6 @@
 grammar ImperativeLanguage;
 
-@header { package thesis; }
+@header { package jsfp; }
 
 provingStructure: assertionComment commands EOF;
 

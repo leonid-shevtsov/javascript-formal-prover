@@ -1,6 +1,6 @@
-(ns thesis.t-algebra
+(ns jsfp.t-algebra
   (:use midje.sweet)
-  (:require [thesis.algebra :as algebra]))
+  (:require [jsfp.algebra :as algebra]))
 
 (fact
   "expr builds expressions"

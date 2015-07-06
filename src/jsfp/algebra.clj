@@ -1,5 +1,5 @@
 (ns
-  thesis.algebra
+  jsfp.algebra
   "An Expression is any kind of logical expression, it consists of an operator
   and its params, which in turn may be Expression, string identifiers, or
   numeric and boolean primitive constants"

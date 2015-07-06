@@ -1,7 +1,7 @@
-(ns thesis.t-simplify
+(ns jsfp.t-simplify
   (:use midje.sweet)
-  (:require [thesis.algebra :refer [expr]]
-            [thesis.simplify :as simplify]))
+  (:require [jsfp.algebra :refer [expr]]
+            [jsfp.simplify :as simplify]))
 
 (facts
   "about simplify-expression"
