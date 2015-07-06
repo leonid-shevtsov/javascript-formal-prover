@@ -5,6 +5,6 @@
 
 (fact
   "prover can prove truth"
-  (subj/resolution-prover [] true)
+  (subj/resolution-method [] true)
   => :proved
   )

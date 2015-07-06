@@ -19,14 +19,9 @@
     (catch FileNotFoundException _
       (log/errorf "File not found: %s" filename))))
 
-(defn prove-program [program]
-  (let [correctness-hypothesis (program-correctness-hypothesis program)
-
-        _ (log/spyf "Program correctness hypothesis:\n%s"
-                    correctness-hypothesis)
-
-        [comparison-axioms factualized-hypothesis]
-          (factualize-comparisons correctness-hypothesis)
+(defn prove-hypothesis [hypothesis]
+  (let [[comparison-axioms factualized-hypothesis]
+        (factualize-comparisons hypothesis)
 
         _ (log/spyf "After abstracting comparisons:\n%s"
                     factualized-hypothesis)
@@ -35,6 +30,13 @@
         _ (log/spyf "Axioms about comparisons:\n%s"
                     (s/join "\n" (map str comparison-axioms)))]
     (prover comparison-axioms factualized-hypothesis)))
+
+(defn prove-program [program]
+  (let [correctness-hypothesis (program-correctness-hypothesis program)
+
+        _ (log/spyf "Program correctness hypothesis:\n%s"
+                    correctness-hypothesis)]
+    (prove-hypothesis correctness-hypothesis)))
 
 (defn -main [filename & args]
   (if-let [program (parse-program-from-filename filename)]

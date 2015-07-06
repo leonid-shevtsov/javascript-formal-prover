@@ -48,12 +48,10 @@
                                                 clauses)))]
       (if (empty-clause? best-clause)
         :proved
-        (recur (conj clauses best-clause) (inc iteration))
-        )
+        (recur (conj clauses best-clause) (inc iteration)))
       (do
         (log/debug "Failed to disprove: " (clauses->str clauses))
-        :failed-to-prove)
-      )))
+        :failed-to-prove))))
 
 (defn trivial-solution [[yes no]]
   (cond
